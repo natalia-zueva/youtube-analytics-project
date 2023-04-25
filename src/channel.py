@@ -13,8 +13,8 @@ class Channel:
     def __init__(self, channel_id: str) -> None:
         """Экземпляр инициализируется id канала. Дальше все данные будут подтягиваться по API."""
 
-        self.channel_id = channel_id
-        self.channel_info = self.youtube.channels().list(id=self.channel_id, part='snippet,statistics').execute()
+        self.__channel_id = channel_id
+        self.channel_info = self.youtube.channels().list(id=self.__channel_id, part='snippet,statistics').execute()
         self.title = self.channel_info['items'][0]['snippet']['title']
         self.description = self.channel_info['items'][0]['snippet']['description']
         self.url = f'https://www.youtube.com/channel/{self.channel_info["items"][0]["id"]}'
@@ -36,10 +36,21 @@ class Channel:
         """Dозвращает объект для работы с YouTube API"""
         return cls.youtube
 
-    def to_json(self):
+    @property
+    def channel_id(self):
+        return self.channel_id
+
+    def to_json(self, filename):
         """Cохраняет в файл значения атрибутов экземпляра `Channel`"""
-        with open('vdud.json', 'w', encoding="utf-8") as outfile:
-            json.dump(self.channel_info, outfile, indent=2, ensure_ascii=False)
+        channel_data = {
+            "channel_id": self.__channel_id,
+            "title": self.title,
+            "description": self.description,
+            "url": self.url,
+            "subscriber_count": self.subs,
+            "video_count": self.video_count,
+            "view_count": self.views
+        }
 
-
-
+        with open(filename, "w", encoding="utf-8") as file:
+            json.dump(channel_data, file, indent=4, ensure_ascii=False)
